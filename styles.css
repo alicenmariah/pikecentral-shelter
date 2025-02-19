@@ -1,0 +1,235 @@
+:root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --accent: #7289da;
+    --accent-hover: #5b6eae;
+    --border: #404040;
+    --input-bg: #333333;
+}
+
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 20px;
+    line-height: 1.6;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.main-container {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    gap: 20px;
+    height: calc(100vh - 100px);
+}
+
+.form-container {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 15px;
+    overflow-y: auto;
+}
+
+.entries-container {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.form-group {
+    margin-bottom: 8px;
+}
+
+label {
+    display: inline-block;
+    margin-bottom: 2px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 0.9em;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="number"],
+textarea {
+    width: calc(100% - 16px);
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    font-size: 0.9em;
+    margin-bottom: 4px;
+}
+
+textarea {
+    height: 40px;
+    resize: vertical;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background-color: var(--input-bg);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 0.9em;
+}
+
+input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+}
+
+h3 {
+    margin: 10px 0;
+    font-size: 1.1em;
+    padding-bottom: 5px;
+}
+
+#otherDescription {
+    width: 120px;
+    padding: 4px;
+    margin-left: 5px;
+    display: inline-block;
+}
+
+.button-group {
+    margin-top: 10px;
+}
+
+button {
+    padding: 6px 12px;
+    font-size: 0.9em;
+}
+
+/* Entries List Styling */
+.entry-card {
+    background-color: var(--input-bg);
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+.entry-card h4 {
+    margin: 0 0 10px 0;
+    color: var(--accent);
+}
+
+.entry-details {
+    font-size: 14px;
+}
+
+.entry-items {
+    margin-top: 10px;
+    color: var(--text-secondary);
+}
+
+/* Header Styles */
+.header {
+    background-color: var(--bg-secondary);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    gap: 20px;
+    height: 60px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 300px;
+}
+
+.header img {
+    width: 50px;
+    height: 50px;
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.header h1 span {
+    display: block;
+}
+
+.stats-grid {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: space-around;
+}
+
+.stat-card {
+    background-color: var(--input-bg);
+    padding: 5px 15px;
+    border-radius: 6px;
+    text-align: center;
+    min-width: 150px;
+    flex: 1;
+}
+
+.stat-card:last-child {
+    flex: 2;
+    max-width: 400px;
+}
+
+.stat-number {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--accent);
+    margin-bottom: 2px;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.8em;
+}
+
+.top-items-inline {
+    color: var(--text-primary);
+    font-size: 0.8em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+/* Style for the Select All checkbox */
+#selectAll + label {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.name-row {
+    display: flex;
+    gap: 10px;
+}
+
+.name-row .form-group {
+    flex: 1;
+} 

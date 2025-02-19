@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Assistance Form</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <img src="drop-icon.png" alt="Water Drop Logo">
+            <h1>
+                <span>Pike Central</span>
+                <span>Emergency Shelter</span>
+            </h1>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalRequests">0</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="totalResidents">0</div>
+                <div class="stat-label">People Assisted</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Most Requested Items</div>
+                <div class="top-items-inline" id="topItems">Loading...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- Left side - Form -->
+        <div class="form-container">
+            <form id="assistanceForm">
+                <div class="name-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name:</label>
+                        <input type="text" id="firstName" name="firstName">
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name:</label>
+                        <input type="text" id="lastName" name="lastName">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+                <div class="form-group">
+                    <label for="address">Physical Address:</label>
+                    <input type="text" id="address" name="address">
+                </div>
+                <div class="form-group">
+                    <label for="damages">Damages to Home:</label>
+                    <textarea id="damages" name="damages"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="residents">How Many Living in the Home:</label>
+                    <input type="number" id="residents" name="residents">
+                </div>
+                
+                <h3>Items:</h3>
+                <div class="items-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="selectAll" onchange="selectAllItems()">
+                        <label for="selectAll">Select All Items</label>
+                    </div>
+                    <div></div> <!-- Empty div for grid alignment -->
+                    
+                    <!-- Left column -->
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="babySupplies" name="items" value="Baby Supplies">
+                        <label for="babySupplies">Baby Supplies</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="paperTowels" name="items" value="Paper Towels">
+                        <label for="paperTowels">Paper Towels</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="blankets" name="items" value="Blankets">
+                        <label for="blankets">Blankets</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="pillows" name="items" value="Pillows">
+                        <label for="pillows">Pillows</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cleaningSupplies" name="items" value="Cleaning Supplies">
+                        <label for="cleaningSupplies">Cleaning Supplies</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="toiletPaper" name="items" value="Toilet Paper">
+                        <label for="toiletPaper">Toilet Paper</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="clothing" name="items" value="Clothing">
+                        <label for="clothing">Clothing</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="towels" name="items" value="Towels">
+                        <label for="towels">Towels</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="petSupplies" name="items" value="Dog/Cat Food/Supplies">
+                        <label for="petSupplies">Dog/Cat Food/Supplies</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="toys" name="items" value="Toys/Games/Activities">
+                        <label for="toys">Toys/Games/Activities</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="drinks" name="items" value="Drinks">
+                        <label for="drinks">Drinks</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="water" name="items" value="Water">
+                        <label for="water">Water</label>
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="food" name="items" value="Food">
+                        <label for="food">Food</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="other" name="items" value="Other">
+                        <label for="other">Other</label>
+                        <input type="text" id="otherDescription" name="otherDescription" placeholder="Please specify">
+                    </div>
+                    
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="hygiene" name="items" value="Hygiene Supplies/Toiletry Items">
+                        <label for="hygiene">Hygiene Supplies/Toiletry Items</label>
+                    </div>
+                </div>
+            </form>
+            <div class="button-group">
+                <button type="submit" form="assistanceForm">Submit</button>
+                <button id="exportButton">Export to CSV</button>
+                <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+                <button id="importButton" onclick="document.getElementById('csvFileInput').click()">Import CSV</button>
+            </div>
+        </div>
+
+        <!-- Right side - Entries List -->
+        <div class="entries-container">
+            <h3>Submitted Entries</h3>
+            <div id="entriesList">
+                <!-- Entries will be dynamically added here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 
