@@ -21,6 +21,26 @@ document.addEventListener('DOMContentLoaded', function() {
             importCSV(file);
         }
     });
+
+    // Initial fetch
+    fetchAndDisplayEntries();
+    
+    // Set up periodic refresh
+    const REFRESH_INTERVAL = 30000; // 30 seconds
+    setInterval(fetchAndDisplayEntries, REFRESH_INTERVAL);
+
+    // Add after your DOMContentLoaded event listener
+    document.getElementById('searchInput').addEventListener('input', function() {
+        const searchQuery = this.value.toLowerCase();
+        const searchField = document.getElementById('searchField').value;
+        filterEntries(searchQuery, searchField);
+    });
+
+    document.getElementById('searchField').addEventListener('change', function() {
+        const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+        const searchField = this.value;
+        filterEntries(searchQuery, searchField);
+    });
 });
 
 let formData = [];
@@ -58,10 +78,14 @@ function deleteEntry(index) {
     updateEntriesList();
 }
 
+// Add these constants at the top of your file
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwkGjI64mmKGWkj-jnG6hrtTwtKzNAJZR_Dhv-_Oprjlmtv9bbtMGZCYWiAUHpEJiWbNA/exec';
+const REFRESH_INTERVAL = 30000; // 30 seconds
+
+// Replace the form submit handler
 document.getElementById('assistanceForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
-    const formElements = e.target.elements;
     const selectedItems = Array.from(document.querySelectorAll('input[name="items"]:checked'))
         .map(checkbox => {
             if (checkbox.id === 'other') {
@@ -72,24 +96,80 @@ document.getElementById('assistanceForm').addEventListener('submit', function(e)
         });
 
     const entry = {
-        firstName: formElements.firstName.value,
-        lastName: formElements.lastName.value,
-        phone: formElements.phone.value,
-        address: formElements.address.value,
-        damages: formElements.damages.value,
-        residents: parseInt(formElements.residents.value) || 0,
-        items: selectedItems  // Store as array instead of joined string
+        firstName: e.target.firstName.value,
+        lastName: e.target.lastName.value,
+        phone: e.target.phone.value,
+        address: e.target.address.value,
+        damages: e.target.damages.value,
+        residents: parseInt(e.target.residents.value) || 0,
+        items: selectedItems
     };
 
-    // Load existing entries, add new one, and save back to localStorage
-    const existingEntries = JSON.parse(localStorage.getItem('entries') || '[]');
-    existingEntries.push(entry);
-    localStorage.setItem('entries', JSON.stringify(existingEntries));
-    
-    displayEntries(existingEntries);
-    updateStatistics(existingEntries);
+    // Create hidden iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    // Create the form inside the iframe
+    const form = iframe.contentDocument.createElement('form');
+    form.method = 'POST';
+    form.action = GOOGLE_SCRIPT_URL;
+
+    // Add the data
+    const dataInput = iframe.contentDocument.createElement('input');
+    dataInput.type = 'hidden';
+    dataInput.name = 'data';
+    dataInput.value = JSON.stringify(entry);
+    form.appendChild(dataInput);
+
+    // Add form to iframe and submit
+    iframe.contentDocument.body.appendChild(form);
+
+    // Add success message
+    const successMessage = document.createElement('div');
+    successMessage.textContent = 'Form submitted successfully!';
+    successMessage.style.color = 'green';
+    successMessage.style.marginTop = '10px';
+    e.target.appendChild(successMessage);
+
+    // Reset form
     e.target.reset();
+
+    // Submit form
+    form.submit();
+
+    // Clean up and refresh data after delay
+    setTimeout(() => {
+        document.body.removeChild(iframe);
+        if (e.target.contains(successMessage)) {
+            e.target.removeChild(successMessage);
+        }
+        fetchAndDisplayEntries();
+    }, 2000);
 });
+
+// Fetch entries function
+function fetchAndDisplayEntries() {
+    const script = document.createElement('script');
+    const callbackName = 'callback_' + Date.now();
+    
+    window[callbackName] = function(response) {
+        if (response && response.data) {
+            displayEntries(response.data);
+            updateStatistics(response.data);
+        }
+        document.body.removeChild(script);
+        delete window[callbackName];
+    };
+    
+    script.src = `${GOOGLE_SCRIPT_URL}?callback=${callbackName}&t=${Date.now()}`;
+    script.onerror = function() {
+        document.body.removeChild(script);
+        delete window[callbackName];
+    };
+    
+    document.body.appendChild(script);
+}
 
 function exportToCSV() {
     const entries = JSON.parse(localStorage.getItem('entries') || '[]');
@@ -205,19 +285,66 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
     }
 });
 
-// Update statistics function to handle the data properly
-function updateStatistics(entries) {
-    // Update total requests
-    document.getElementById('totalRequests').textContent = entries.length;
+function displayEntries(entries = []) {
+    const entriesList = document.getElementById('entriesList');
+    if (!entriesList) return;
+    
+    entriesList.innerHTML = '';
 
-    // Update total residents (sum up all residents)
+    if (!entries || entries.length === 0) {
+        entriesList.innerHTML = '<div class="entry-card">No entries available</div>';
+        return;
+    }
+
+    // Sort entries with most recent first
+    entries.reverse().forEach(entry => {
+        const entryCard = document.createElement('div');
+        entryCard.className = 'entry-card';
+        
+        const name = `${entry.firstName || ''} ${entry.lastName || ''}`.trim();
+        const itemsList = Array.isArray(entry.items) ? entry.items.join(', ') : entry.items || '';
+        
+        entryCard.innerHTML = `
+            <h4>${name || 'No Name'}</h4>
+            <div class="entry-details">
+                <div>Phone: ${entry.phone || 'N/A'}</div>
+                <div>Address: ${entry.address || 'N/A'}</div>
+                <div>Residents: ${entry.residents || '0'}</div>
+                ${entry.damages ? `<div>Damages: ${entry.damages}</div>` : ''}
+                <div class="entry-items">Items: ${itemsList || 'None'}</div>
+            </div>
+        `;
+        
+        entriesList.appendChild(entryCard);
+    });
+
+    // Reapply current search filter
+    const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+    const searchField = document.getElementById('searchField').value;
+    if (searchQuery) {
+        filterEntries(searchQuery, searchField);
+    }
+}
+
+function updateStatistics(entries = []) {
+    // Update total requests
+    const totalRequestsElement = document.getElementById('totalRequests');
+    if (totalRequestsElement) {
+        totalRequestsElement.textContent = entries.length;
+    }
+
+    // Update total residents
     const totalResidents = entries.reduce((sum, entry) => {
         const residents = parseInt(entry.residents) || 0;
         return sum + residents;
     }, 0);
-    document.getElementById('totalResidents').textContent = totalResidents;
+    
+    const totalResidentsElement = document.getElementById('totalResidents');
+    if (totalResidentsElement) {
+        totalResidentsElement.textContent = totalResidents;
+    }
 
-    // Calculate most requested items
+    // Calculate item counts
     const itemCounts = {};
     entries.forEach(entry => {
         if (Array.isArray(entry.items)) {
@@ -230,57 +357,16 @@ function updateStatistics(entries) {
         }
     });
 
-    // Sort items by count and format for display
+    // Display top items
     const topItems = Object.entries(itemCounts)
         .sort(([,a], [,b]) => b - a)
         .map(([item, count]) => `${item} (${count})`)
         .join(' • ');
 
     const topItemsElement = document.getElementById('topItems');
-    topItemsElement.textContent = topItems || 'No items requested yet';
-
-    console.log('Updated statistics:', { entries: entries.length, residents: totalResidents, itemCounts }); // Debug log
-}
-
-function displayEntries(entries) {
-    const entriesList = document.getElementById('entriesList');
-    entriesList.innerHTML = '';  // Clear the list
-
-    if (!entries || entries.length === 0) {
-        entriesList.innerHTML = '<div class="entry-card">No entries available</div>';
-        return;
+    if (topItemsElement) {
+        topItemsElement.textContent = topItems || 'No items requested yet';
     }
-
-    entries.forEach(entry => {
-        const entryCard = document.createElement('div');
-        entryCard.className = 'entry-card';
-
-        const name = `${entry.firstName || entry.firstname || ''} ${entry.lastName || entry.lastname || ''}`.trim();
-        
-        let itemsList = '';
-        if (Array.isArray(entry.items) && entry.items.length > 0) {
-            itemsList = entry.items.join(', ');
-        } else if (typeof entry.items === 'string') {
-            itemsList = entry.items;
-        }
-
-        // Ensure residents is treated as a number
-        const residentsCount = parseInt(entry.residents) || 0;
-        const residentsDisplay = `<div>Residents: ${residentsCount}</div>`;
-
-        entryCard.innerHTML = `
-            <h4>${name}</h4>
-            <div class="entry-details">
-                <div>Phone: ${entry.phone || 'N/A'}</div>
-                <div>Address: ${entry.address || 'N/A'}</div>
-                ${residentsDisplay}
-                ${entry.damages ? `<div>Damages: ${entry.damages}</div>` : ''}
-                <div class="entry-items">Items: ${itemsList || 'None'}</div>
-            </div>
-        `;
-
-        entriesList.appendChild(entryCard);
-    });
 }
 
 // Add these styles if not already present
@@ -325,5 +411,40 @@ function selectAllItems() {
         if (checkbox.id !== 'selectAll' && checkbox.id !== 'other') {
             checkbox.checked = isChecked;
         }
+    });
+}
+
+function filterEntries(query, field) {
+    const entriesList = document.getElementById('entriesList');
+    const entryCards = entriesList.getElementsByClassName('entry-card');
+
+    Array.from(entryCards).forEach(card => {
+        let match = false;
+        const text = card.textContent.toLowerCase();
+
+        switch (field) {
+            case 'name':
+                const name = card.querySelector('h4').textContent.toLowerCase();
+                match = name.includes(query);
+                break;
+            case 'phone':
+                const phone = card.querySelector('.entry-details div:nth-child(1)').textContent.toLowerCase();
+                match = phone.includes(query);
+                break;
+            case 'address':
+                const address = card.querySelector('.entry-details div:nth-child(2)').textContent.toLowerCase();
+                match = address.includes(query);
+                break;
+            case 'items':
+                const items = card.querySelector('.entry-items').textContent.toLowerCase();
+                match = items.includes(query);
+                break;
+            case 'all':
+            default:
+                match = text.includes(query);
+                break;
+        }
+
+        card.style.display = match ? '' : 'none';
     });
 } 
