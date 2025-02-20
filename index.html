@@ -150,6 +150,16 @@
         <!-- Right side - Entries List -->
         <div class="entries-container">
             <h3>Submitted Entries</h3>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search entries...">
+                <select id="searchField">
+                    <option value="all">All Fields</option>
+                    <option value="name">Name</option>
+                    <option value="phone">Phone</option>
+                    <option value="address">Address</option>
+                    <option value="items">Items</option>
+                </select>
+            </div>
             <div id="entriesList">
                 <!-- Entries will be dynamically added here -->
             </div>
