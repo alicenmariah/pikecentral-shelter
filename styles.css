@@ -232,4 +232,27 @@ button {
 
 .name-row .form-group {
     flex: 1;
+}
+
+.search-container {
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+#searchInput {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+}
+
+#searchField {
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
 } 
